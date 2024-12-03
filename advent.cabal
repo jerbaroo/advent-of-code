@@ -19,6 +19,7 @@ library
     import:           warnings
     exposed-modules:  Advent.Day1,
                       Advent.Day2,
+                      Advent.Day3,
                       Advent.Prelude
     build-depends:    base,
                       containers,
