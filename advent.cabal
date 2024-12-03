@@ -17,12 +17,15 @@ common warnings
 
 library
     import:           warnings
-    exposed-modules:  Day1
+    exposed-modules:  Advent.Day1,
+                      Advent.Day2,
+                      Advent.Prelude
     build-depends:    base,
                       containers,
                       from-sum,
                       megaparsec,
                       mtl,
+                      safe,
                       text,
                       transformers
     hs-source-dirs:   src

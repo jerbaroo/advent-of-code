@@ -1,14 +1,7 @@
-module Day1 where
+module Advent.Day1 where
 
--- import Control.FromSum (fromEitherM)
--- import Control.Monad.Error.Class (throwError)
--- import Control.Monad.IO.Class (liftIO)
--- import Control.Monad.Trans.Except (ExceptT)
-import Data.Bifunctor (bimap)
-import Data.Functor ((<&>))
-import Data.List (foldl', sort)
+import Advent.Prelude
 import Data.Map qualified as Map
-import Data.Void (Void)
 import Text.Megaparsec (ParseErrorBundle, Parsec)
 import Text.Megaparsec qualified as M
 import Text.Megaparsec.Char qualified as MC
@@ -21,7 +14,7 @@ main = readLists >>= \case
     print $ part2 lists
 
 readLists :: IO (Either String ([Int], [Int]))
-readLists = readFile "src/Day1.txt" <&> bimap show unzip . parseFile
+readLists = readFile "data/Day2.txt" <&> bimap show unzip . parseFile
 
 parseFile :: String -> Either (ParseErrorBundle String Void) [(Int, Int)]
 parseFile = M.runParser (M.many parseLine) ""
