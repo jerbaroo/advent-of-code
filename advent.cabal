@@ -20,20 +20,24 @@ library
     exposed-modules:  Advent.Day1,
                       Advent.Day2,
                       Advent.Day3,
+                      Advent.Day4,
                       Advent.Prelude
-    build-depends:    base,
+    build-depends:    async,
+                      base,
                       containers,
                       from-sum,
                       megaparsec,
                       mtl,
                       safe,
                       text,
-                      transformers
+                      transformers,
+                      vector
     hs-source-dirs:   src
     default-language: GHC2021
     default-extensions:
                       BlockArguments,
-                      LambdaCase
+                      LambdaCase,
+                      OverloadedRecordDot
 
 executable advent
     import:           warnings
