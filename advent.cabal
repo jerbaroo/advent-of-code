@@ -22,6 +22,7 @@ library
                       Advent.Day3,
                       Advent.Day4,
                       Advent.Day5,
+                      Advent.Day6,
                       Advent.Prelude
     build-depends:    async,
                       base,
@@ -32,6 +33,7 @@ library
                       safe,
                       text,
                       transformers,
+                      unliftio,
                       vector
     hs-source-dirs:   src
     default-language: GHC2021
@@ -47,6 +49,7 @@ executable advent
                       base
     hs-source-dirs:   app
     default-language: GHC2021
+    ghc-options: -threaded -rtsopts
 
 test-suite advent-test
     import:           warnings
