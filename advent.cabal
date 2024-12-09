@@ -23,18 +23,25 @@ library
                       Advent.Day4,
                       Advent.Day5,
                       Advent.Day6,
+                      Advent.Day7,
+                      Advent.Day8,
+                      Advent.Day9,
                       Advent.Prelude
-    build-depends:    async,
+    build-depends:    array,
+                      async,
                       base,
                       containers,
+                      extra,
                       from-sum,
                       megaparsec,
+                      MissingH,
                       mtl,
                       safe,
                       text,
                       transformers,
                       unliftio,
-                      vector
+                      vector,
+                      witch
     hs-source-dirs:   src
     default-language: GHC2021
     default-extensions:
