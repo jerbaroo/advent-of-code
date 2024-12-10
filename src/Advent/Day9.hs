@@ -2,10 +2,10 @@ module Advent.Day9 where
 
 import Advent.Prelude
 import Data.Char (digitToInt)
-import Data.String.Utils (strip)
+import Data.List (sortOn)
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
-import Data.List (sortOn)
+import Data.String.Utils (strip)
 
 type Block    = (Int, Maybe Int)
 type DiskMap  = Map Int [Block]
