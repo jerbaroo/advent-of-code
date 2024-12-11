@@ -1,35 +1,29 @@
 module Advent.Day11 where
 
 import Advent.Prelude
-import Data.Map (Map)
-import Data.Map qualified as Map
+import Data.IntMap (IntMap)
+import Data.IntMap qualified as IntMap
 
-type Blinks = Int
-type Stone  = Int
-type Memory = Map (Stone, Blinks) Int
+type Stone   = Int
+type Counter = IntMap Int
 
 main :: IO ()
-main = readStones "data/Day11.txt" >>= (print . snd . blinkList Map.empty 75)
+main = readStones "data/Day11.txt" >>= (print . count 75)
 
-blink :: Memory -> Blinks -> Stone -> (Memory, Int)
-blink mem 0 _ = (mem, 1)
-blink mem b s = case Map.lookup (s, b) mem of
-  Nothing ->
-    let (mem', v) = blinkList mem (b - 1) $ transform s
-    in  (Map.insert (s, b) v mem', v)
-  Just  v -> (mem, v)
+count :: Int -> [Stone] -> Int
+count n = sum . map snd . IntMap.toList . times n blink .
+  IntMap.fromListWith (+) . fmap (,1)
 
-blinkList :: Memory -> Blinks -> [Stone] -> (Memory, Int)
-blinkList mem b = foldl' (\(mem', v) s -> second (+v) $ blink mem' b s) (mem, 0)
+blink :: Counter -> Counter
+blink c = IntMap.fromListWith (+)
+  [ (s', x) | (s, x) <- IntMap.assocs c, s' <- transform s ]
 
 readStones :: FilePath -> IO [Stone]
 readStones = fmap (map read . words) . readFile
 
 transform :: Stone -> [Stone]
 transform 0 = [1]
-transform n = do
-  let str = show n
-  let len = length str
-  if   even len
-  then let (a, b) = splitAt (len `div` 2) str in read <$> [a, b]
-  else [n * 2024]
+transform n
+  | (halfLen, 0) <- length (show n) `quotRem` 2
+  = let (l, r) = n `quotRem` (10 ^ halfLen) in [l, r]
+transform n = [n * 2024]

@@ -35,6 +35,10 @@ debug = debugPre ""
 debugPre :: (Show a) => String -> a -> a
 debugPre pre a = trace (pre <> show a) a
 
+times :: Int -> (a -> a) -> a -> a
+times 0 _ a = a
+times n f a = times (n - 1) f $ f a
+
 uncurry3 :: (a -> b -> c -> d) -> ((a, b, c) -> d)
 uncurry3 f (a, b, c) = f a b c
 
