@@ -12,7 +12,7 @@ main :: IO ()
 main = readTopoMap "data/Day10.txt" >>=
   print . (result (Proxy @Peaks) &&& result (Proxy @Trails))
 
-data Direction = U | D | L | R deriving (Eq, Ord)
+data Direction = U | D | L | R deriving (Eq, Ord, Show)
 type Position  = (Int, Int)
 type TopoMap   = Vector (Vector Int)
 type Reachable = Set (Position, Direction)

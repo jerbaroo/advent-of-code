@@ -6,49 +6,66 @@ import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 
-data Direction = U | D | L | R
-type Index     = (Int, Int)
-type Plots     = Map Index Char
-type Plot      = Set Index
+data Direction = U | D | L | R deriving (Eq, Ord, Show)
+type Garden    = Map Plot Plant
+type Plot      = (Int, Int)
+type Plant     = Char
+type Region    = Set Plot
 
 main :: IO ()
-main = readPlots "data/Day12.txt" >>= (print . part1)
+main = readGarden "data/Day12.txt" >>= \garden ->
+  forM_ [(area, perimeter), (area, walls)] \(f, g) ->
+    print $ sum $ uncurry (*) . (f &&& g) <$> allRegions garden
 
-part1 :: Plots -> Int
-part1 plots | Map.null plots = 0
-part1 plots = do
-  let (i, c) = Map.findMin plots
-  let ((area, perim), plot) = areaAndPerimeter plots Set.empty i c
-  -- (debugPre ("Area " <> [c] <> " " <> show i <> ": ") area * debugPre ("Perim " <> [c] <> " " <> show i <> ": ") perim)
-  (area * perim) + part1 (foldl' (flip Map.delete) plots plot)
+-- * Determine regions in garden.
 
--- | Area + perimeter for plot at given index (not in given 'Plots').
-areaAndPerimeter :: Plots -> Plot -> Index -> Char -> ((Int, Int), Plot)
-areaAndPerimeter plots seen i c = first (first (+1)) $ -- Add 1 to area.
-  foldl'
-    (\(areaPerim, seen') d -> first (add areaPerim) $ f d seen')
-    ((0, 0), Set.insert i seen) -- Update sites already counted in plot.
-    [U, L, D, R]
+allRegions :: Garden -> [Region]
+allRegions garden | Map.null garden = []
+allRegions garden = do
+  let region = uncurry (findRegion garden Set.empty) $ Map.findMin garden
+  region : allRegions (foldl' (flip Map.delete) garden $ Set.toList region)
+
+findRegion :: Garden -> Region -> Plot -> Char -> Region
+findRegion garden region plot plant =
+  foldl' f (Set.insert plot region) [U, D, L, R]
  where
-  f :: Direction -> Plot -> ((Int, Int), Plot)
-  f d seen' = do
-    let next     = move i d
-    let nextSeen = next `elem` seen'
-    case Map.lookup next plots of
-      Just c' | c == c' && not nextSeen -> areaAndPerimeter plots seen' next c
-      _ -> ((0, if nextSeen then 0 else 1), seen')
+  f :: Region -> Direction -> Region
+  f region' direction = do
+    let nextPlot = step direction plot
+    if   nextPlot `elem` region'
+    then region'
+    else case Map.lookup nextPlot garden of
+      Just plant' | plant' == plant -> findRegion garden region' nextPlot plant
+      _                             -> region'
 
-add :: (Int, Int) -> (Int, Int) -> (Int, Int)
-add (a, b) (c, d) = (a + c, b + d)
+-- * Functions on regions.
 
-move :: (Int, Int) -> Direction -> (Int, Int)
-move (i, j) U = (i - 1, j    )
-move (i, j) D = (i + 1, j    )
-move (i, j) L = (i    , j - 1)
-move (i, j) R = (i    , j + 1)
+area :: Region -> Int
+area = Set.size
 
-readPlots :: String -> IO Plots
-readPlots = fmap (parsePlots . lines) . readFile
+perimeter :: Region -> Int
+perimeter region = sum $ Set.toList region <&> \plot ->
+  length $ filter id $ [U, D, L, R] <&> \dir ->
+    step dir plot `Set.notMember` region
+
+walls :: Region -> Int
+walls region = sum $ Set.toList region <&> \plot ->
+  length $ filter id $ [(U, R), (R, D), (D, L), (L, U)] <&> \(a, b) ->
+    case [step a plot, step a $ step b plot, step b plot] <&> (`Set.member` region) of
+      [False, _    , False] -> True
+      [True , False, True ] -> True
+      _                     -> False
+
+-- * Parsers and helpers.
+
+readGarden :: String -> IO Garden
+readGarden = fmap (parseGarden . lines) . readFile
  where
-  parsePlots rows = Map.fromList
+  parseGarden rows = Map.fromList
     [ ((i, j), c) | (i, row) <- zip [0..] rows, (j, c) <- zip [0..] row ]
+
+step :: Direction -> Plot -> Plot
+step U (i, j) = (i - 1, j    )
+step D (i, j) = (i + 1, j    )
+step L (i, j) = (i    , j - 1)
+step R (i, j) = (i    , j + 1)

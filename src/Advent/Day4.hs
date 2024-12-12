@@ -11,7 +11,7 @@ type Index = (Int, Int)
 
 type Search a = [(a, Index)]
 
-data Direction = N | NE | E | SE | S | SW | W | NW deriving Show
+data Compass = N | NE | E | SE | S | SW | W | NW deriving Show
 
 main :: IO ()
 main = print =<< (readGrid >>= forM [searchGrid part1, searchGrid part2] . (&))
@@ -33,7 +33,7 @@ part2 index =
   ]
 
 -- | Step in a compass direction.
-step :: Index -> Direction -> Index
+step :: Index -> Compass -> Index
 step (i, j) N  = (i-1, j  )
 step (i, j) NE = (i-1, j+1)
 step (i, j) E  = (i  , j+1)

@@ -35,6 +35,9 @@ debug = debugPre ""
 debugPre :: (Show a) => String -> a -> a
 debugPre pre a = trace (pre <> show a) a
 
+pairwise :: (a -> a -> c) -> (b -> b -> d) -> (a, b) -> (a, b) -> (c, d)
+pairwise f g (a1, b1) (a2, b2) = (a1 `f` a2, b1 `g` b2)
+
 times :: Int -> (a -> a) -> a -> a
 times 0 _ a = a
 times n f a = times (n - 1) f $ f a
