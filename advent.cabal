@@ -29,6 +29,7 @@ library
                       Advent.Day10,
                       Advent.Day11,
                       Advent.Day12,
+                      Advent.Day13,
                       Advent.Prelude
     build-depends:    array,
                       async,
@@ -36,6 +37,7 @@ library
                       containers,
                       extra,
                       from-sum,
+                      hmatrix,
                       megaparsec,
                       MissingH,
                       mtl,
