@@ -2,7 +2,6 @@ module Advent.Day9 where
 
 import Advent.Prelude
 import Data.Char (digitToInt)
-import Data.List (sortOn)
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.String.Utils (strip)

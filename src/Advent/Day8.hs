@@ -1,7 +1,7 @@
 module Advent.Day8 where
 
 import Advent.Prelude
-import Data.List (nub, sortOn)
+import Data.List (nub)
 import Data.List.Extra (groupOn)
 
 type Index = (Int, Int)
