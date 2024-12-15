@@ -6,7 +6,7 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 
 type Coords     = (Int, Int)
-data Item       = Box | Wall deriving (Eq, Show)
+data Item       = Box | BoxLHS | BoxRHS | Wall deriving (Eq, Show)
 data Move       = U | D | L | R
 type Robot      = Coords
 type Update     = (Coords, Coords)
@@ -19,7 +19,7 @@ instance Show Move where
   show R = ">"
 
 main :: IO ()
-main = readInput "data/Day15.txt" >>=
+main = readInput False "data/Day15-example.txt" >>=
   print . part1
 
 part1 :: ((Robot, Warehouse), [Move]) -> Int
@@ -56,14 +56,17 @@ move1 (i, j) R = (i    , j + 1)
 
 -- * Reading & writing.
 
-readInput :: String -> IO ((Robot, Warehouse), [Move])
-readInput = fmap (parse . second concat . break (== "") . lines) . readFile
+readInput :: Bool -> String -> IO ((Robot, Warehouse), [Move])
+readInput double =
+  fmap (parse . bimap (map widen) concat . break (== "") . lines) . readFile
  where
   parse :: ([String], String) -> ((Robot, Warehouse), [Move])
   parse = (parseWarehouse *** mapMaybe parseMove)
 
   parseItem :: Char -> Maybe Item
-  parseItem = \case; '#' -> Just Wall; 'O' -> Just Box; _ -> Nothing
+  parseItem = \case
+    '#' -> Just Wall; 'O' -> Just Box; '[' -> Just BoxLHS; ']' -> Just BoxRHS;
+    _   -> Nothing
 
   parseMove :: Char -> Maybe Move
   parseMove = \case
@@ -74,13 +77,19 @@ readInput = fmap (parse . second concat . break (== "") . lines) . readFile
     Map.partition (== '@') $ Map.fromList $
       [ ((i, j), c) | (i, row) <- zip [0..] rows , (j, c)   <- zip [0..] row ]
 
+  widen :: String -> String
+  widen = if not double then id else concatMap \case
+    '#' -> "##"; 'O' -> "[]"; '.' -> ".."; '@' -> "@."; x -> [x]
+
 showWarehouse :: (Robot, Warehouse) -> String
 showWarehouse (robot, warehouse) = do
   let findDim :: (Coords -> Int) -> [Coords] -> Int
       findDim f = last . sort . map f
   let (maxI, maxJ) = (findDim fst &&& findDim snd) $ Map.keys warehouse
   let f coords = case Map.lookup coords warehouse of
-        Nothing   -> if coords == robot then '@' else '.'
-        Just Box  -> 'O'
-        Just Wall -> '#'
+        Nothing     -> if coords == robot then '@' else '.'
+        Just Box    -> 'O'
+        Just BoxLHS -> '['
+        Just BoxRHS -> ']'
+        Just Wall   -> '#'
   intercalate "\n" [ [ f (i, j) | j <- [0..maxJ] ] | i <- [0..maxI] ]
