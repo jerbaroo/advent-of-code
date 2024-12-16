@@ -47,6 +47,7 @@ tryMove from move warehouse updates = do
     Nothing   -> trace ("Nothing blocking") updates' -- Nothing blocking.
     Just Box  -> tryMove to move warehouse updates' -- Try move box.
     Just Wall -> [] -- Wall blocking move.
+    Just _    -> error "TODO"
 
 move1 :: Coords -> Move -> Coords
 move1 (i, j) U = (i - 1, j    )

@@ -18,7 +18,7 @@ import Data.Tuple as X (swap)
 import Data.Tuple.Extra as X (both)
 import Data.Void as X (Void)
 import Debug.Trace as X (trace)
-import Safe as X (headMay, lastMay, readMay, tailMay)
+import Safe as X (headMay, lastMay, minimumMay, readMay, tailMay)
 
 infixl 4 <$$>
 (<$$>):: (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)
