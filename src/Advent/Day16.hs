@@ -21,10 +21,11 @@ main :: IO ()
 main = do
   (cells, start, end) <- readMaze "data/Day16-example.txt"
   let solved = dijkstra start cells Map.empty (Map.singleton (start, E) 0)
-  let shortestPath = walk start end solved
+  let shortestPath = walk True start end solved
   putStrLn $ showMap cells start end $ fst <$> shortestPath
   print $ shortestPath
   print $ goodSeats $ fst <$> shortestPath
+  mapM_ print $ sort $ Map.toList solved
 
 deleteFindMin :: Map Node Cost -> ((Node, Cost), Map Node Cost)
 deleteFindMin m = do
@@ -46,25 +47,27 @@ dijkstra goal cells visited unvisited = do
         if   not isWall && isLowerCost && neighbour `Map.notMember` visited
         then Just cost else Nothing
   let validNeighbours = mapMaybe
-        (\x -> (x,) <$> isValidNeighbour x) $ neighbours cells (fst currNode)
+        (\x -> (x,) <$> isValidNeighbour x) $ neighbours cells currNode
   let unvisited'' = foldl' (flip $ uncurry Map.insert) unvisited' validNeighbours
   -- Stop if no more unvisited nodes, else recurse!
   if Map.null unvisited'' then visited else dijkstra goal cells visited' unvisited''
 
 -- | All NSEW neighbours of the given coordinates, no walls.
-neighbours :: Map Coords Bool -> Coords -> [Node]
-neighbours cells curr = flip mapMaybe [N, S, E, W] \direction -> do
-  let next = step True curr direction
-  if Map.lookup next cells == Just True then Nothing else Just (next, direction)
+neighbours :: Map Coords Bool -> (Coords, NSEW) -> [Node]
+neighbours cells (coords, facing) = flip mapMaybe (facing : ninety facing)
+  \direction -> do
+    let next = step True coords direction
+    if Map.lookup next cells == Just True then Nothing else Just (next, direction)
 
-walk :: Coords -> Coords -> Map Node Cost -> [(Node, Cost)]
-walk start coords shortestPaths = do
+walk :: Bool -> Coords -> Coords -> Map Node Cost -> [(Node, Cost)]
+walk branch start coords shortestPaths = do
   -- Select the lowest cost to the given 'Coords'.
-  let (cost, direction) = head $ sortOn fst $ flip mapMaybe [N, S, E, W]
+  let lowestCost = (if branch then id else (:[]) . head) $ sortOn fst $ flip mapMaybe [N, S, E, W]
         \d -> (,d) <$> Map.lookup (coords, d) shortestPaths
-  let prevCoords = step False coords direction
-  ((coords, direction), cost) :
-    if coords == start then [] else walk start prevCoords shortestPaths
+  flip concatMap (trace (show $ length lowestCost) lowestCost) \(cost, direction) -> do
+    let prevCoords = step False coords direction
+    ((coords, direction), cost) :
+      if coords == start then [] else walk False start prevCoords shortestPaths
 
 goodSeats :: [Node] -> Int
 goodSeats = length . nub . map fst
