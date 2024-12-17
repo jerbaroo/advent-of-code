@@ -10,15 +10,14 @@ type Registers   = (Int, Int, Int) -- (A, B, C)
 type Tape        = [Int]
 
 main :: IO ()
-main = readInput "data/Day17.txt" >>= \(registers, tape) -> do
+main = readInput "data/Day17-example.txt" >>= \(registers, tape) -> do
   putStrLn $ "Registers = " <> show registers
   putStrLn $ "Tape = " <> show tape
-  let (output, registers') = program 0 registers tape
-  putStrLn $ "Registers = " <> show registers'
+  let output = program 0 registers tape
   putStrLn $ "Output = " <> show output
 
-program :: Ptr -> Registers -> Tape -> ([Int], Registers)
-program _   registers []   = ([], registers)
+program :: Ptr -> Registers -> Tape -> [Int]
+program _   _         []   = []
 program ptr (a, b, c) tape = do
   let instruction  = toEnum $ tape !! ptr
   let litOperand   = tape !! (ptr + 1)
@@ -36,13 +35,13 @@ program ptr (a, b, c) tape = do
   let ptr' = case (instruction, a == 0) of
         (Jnz, False) -> litOperand -- Jump to literal operand.
         _            -> ptr + 2    -- Jump past operand.
-  let outF = case instruction of
-        Out -> (comboOperand `mod` 8:) -- Output.
-        _   -> id                      -- No output.
-  first outF $
-    if ptr' >= length tape - 1
-    then ([], registers')
-    else program ptr' registers' tape
+  let remainder =
+        if ptr' >= length tape - 1
+        then []
+        else program ptr' registers' tape
+  case instruction of
+    Out -> comboOperand `mod` 8:remainder -- Output.
+    _   -> remainder                      -- No output.
 
 readInput :: String -> IO (Registers, Tape)
 readInput = fmap (parse . lines) . readFile
