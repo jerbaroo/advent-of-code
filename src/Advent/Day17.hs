@@ -10,14 +10,9 @@ type Registers   = (Int, Int, Int) -- (A, B, C)
 type Tape        = [Int]
 
 main :: IO ()
-main = readInput "data/Day17-example.txt" >>= \(registers, tape) -> do
-  putStrLn $ "Registers = " <> show registers
-  putStrLn $ "Tape = " <> show tape
-  let output = program 0 registers tape
-  putStrLn $ "Output = " <> show output
+main = readInput "data/Day17-example.txt" >>= print . uncurry (program 0)
 
 program :: Ptr -> Registers -> Tape -> [Int]
-program _   _         []   = []
 program ptr (a, b, c) tape = do
   let instruction  = toEnum $ tape !! ptr
   let litOperand   = tape !! (ptr + 1)

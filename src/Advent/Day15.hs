@@ -4,26 +4,23 @@ import Advent.Prelude
 import Data.List (intercalate)
 import Data.Map (Map)
 import Data.Map qualified as Map
+import Data.Set qualified as Set
 
 type Coords     = (Int, Int)
 data Item       = Box | BoxLHS | BoxRHS | Wall deriving (Eq, Show)
-data Move       = U | D | L | R
+data Move       = U | D | L | R deriving Eq
 type Robot      = Coords
 type Update     = (Coords, Coords)
 type Warehouse  = Map Coords Item
 
 instance Show Move where
-  show U = "^"
-  show D = "v"
-  show L = "<"
-  show R = ">"
+  show U = "^"; show D = "v"; show L = "<"; show R = ">"
 
 main :: IO ()
-main = readInput False "data/Day15-example.txt" >>=
-  print . part1
+main = readInput True "data/Day15.txt" >>= print . part1
 
 part1 :: ((Robot, Warehouse), [Move]) -> Int
-part1 = sum . map distance . Map.keys . Map.filter (== Box) . snd . uncurry applyMoves
+part1 = sum . map distance . Map.keys . Map.filter (`elem` [Box, BoxLHS]) . snd . uncurry applyMoves
  where
   distance :: Coords -> Int
   distance (i, j) = i * 100 + j
@@ -31,23 +28,34 @@ part1 = sum . map distance . Map.keys . Map.filter (== Box) . snd . uncurry appl
 applyMoves :: (Robot, Warehouse) -> [Move] -> (Robot, Warehouse)
 applyMoves x [] = x
 applyMoves (robot, warehouse) (move:moves) = do
-  case reverse $ tryMove robot move warehouse [] of
-    []      -> trace "No updates" $ applyMoves (robot, warehouse) moves -- No updates to apply.
-    updates -> do
+  case tryMove robot move warehouse [] of
+    []      -> applyMoves (robot, warehouse) moves -- No updates to apply.
+    updates' -> do
+      let updates = filter ((/= robot) . fst) updates'
       let applyUpdate m (from, to) =
-            trace ("Applying move: " <> show from <> " -> " <> show to) $ Map.delete from $ Map.insert to (fromJust $ Map.lookup from m) m
-      let new = (move1 robot move, foldl' applyUpdate warehouse $ reverse $ tail updates)
-      applyMoves (trace ("\nAfter move: " <> show move <> "\n" <> showWarehouse new <> "\n") new) moves
+            Map.delete from $ Map.insert to (fromJust $ Map.lookup from m) m
+      let new = (move1 robot move, foldl' applyUpdate warehouse updates)
+      applyMoves new moves
 
 tryMove :: Coords -> Move -> Warehouse -> [Update] -> [Update]
 tryMove from move warehouse updates = do
-  let to       = trace ("Trying move from " <> show from <> " in dir " <> show move) $ move1 from move
-  let updates' = (from, to) : updates
+  let to        = move1 from move
+  let updates'  = (from, to) : updates
+  let keepGoing = tryMove to move warehouse updates'
   case Map.lookup to warehouse of
-    Nothing   -> trace ("Nothing blocking") updates' -- Nothing blocking.
-    Just Box  -> tryMove to move warehouse updates' -- Try move box.
-    Just Wall -> [] -- Wall blocking move.
-    Just _    -> error "TODO"
+    Nothing                     -> updates' -- Nothing blocking.
+    Just Wall                   -> [] -- Wall blocking move.
+    Just Box                    -> keepGoing
+    Just _ | move `elem` [L, R] -> keepGoing -- Try move box.
+    Just x                      -> do -- Either BoxLHS or BoxRHS
+      let (fromL, fromR) = case x of
+            BoxLHS -> (to, move1 to R)
+            BoxRHS -> (to, move1 to L)
+      let updatesL    = tryMove fromL move warehouse updates'
+      let updatesLSet = Set.fromList updatesL
+      let updatesR    = tryMove fromR move warehouse updatesL
+      let updatesR'   = filter (`Set.notMember` updatesLSet) updatesR
+      if any null [updatesL, updatesR] then [] else updatesL <> updatesR'
 
 move1 :: Coords -> Move -> Coords
 move1 (i, j) U = (i - 1, j    )
@@ -62,7 +70,7 @@ readInput double =
   fmap (parse . bimap (map widen) concat . break (== "") . lines) . readFile
  where
   parse :: ([String], String) -> ((Robot, Warehouse), [Move])
-  parse = (parseWarehouse *** mapMaybe parseMove)
+  parse = parseWarehouse *** mapMaybe parseMove
 
   parseItem :: Char -> Maybe Item
   parseItem = \case
