@@ -34,6 +34,7 @@ library
                       Advent.Day15,
                       Advent.Day16,
                       Advent.Day17,
+                      Advent.Day18,
                       Advent.Prelude
     build-depends:    array,
                       async,
@@ -45,6 +46,7 @@ library
                       megaparsec,
                       MissingH,
                       mtl,
+                      PSQueue,
                       safe,
                       text,
                       transformers,
