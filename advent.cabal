@@ -35,6 +35,7 @@ library
                       Advent.Day16,
                       Advent.Day17,
                       Advent.Day18,
+                      Advent.Day19,
                       Advent.Prelude
     build-depends:    array,
                       async,
@@ -50,6 +51,7 @@ library
                       safe,
                       text,
                       transformers,
+                      trie-simple,
                       unliftio,
                       vector,
                       witch
