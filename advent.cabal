@@ -36,6 +36,7 @@ library
                       Advent.Day17,
                       Advent.Day18,
                       Advent.Day19,
+                      Advent.Day20,
                       Advent.Prelude
     build-depends:    array,
                       async,

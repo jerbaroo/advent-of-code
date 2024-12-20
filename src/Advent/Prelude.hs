@@ -34,6 +34,9 @@ boolToMaybe b x = if b then Just x else Nothing
 debug :: Show a => a -> a
 debug = debugPre ""
 
+enumerate :: [a] -> [(Int, a)]
+enumerate = zip [0..]
+
 debugPre :: (Show a) => String -> a -> a
 debugPre pre a = trace (pre <> show a) a
 
